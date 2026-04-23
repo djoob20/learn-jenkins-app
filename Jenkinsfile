@@ -15,7 +15,7 @@ pipeline {
                     ls -la
                     node --version
                     npm --version
-                    npm ci --legacy-peer-deps
+                    npm ci --force
                     npm run build
                     ls -la
                 '''
