@@ -15,9 +15,18 @@ pipeline {
                     ls -la
                     node --version
                     npm --version
-                    npm ci --force --legacy-peer-deps
+                    npm ci
                     npm run build
                     ls -la
+                '''
+            }
+        }
+        stage('Test') {
+           
+            steps {
+                sh '''
+                    test -f build/index.html
+                    npm run test
                 '''
             }
         }

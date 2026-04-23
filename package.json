@@ -40,6 +40,9 @@
     "@playwright/test": "^1.39.0",
     "@types/node": "^20.8.6"
   },
+  "overrides": {
+    "ajv": "^8.11.0"
+  },
   "jest-junit": {
     "suiteName": "jest tests",
     "outputDirectory": "test-results",
