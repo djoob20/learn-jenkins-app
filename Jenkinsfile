@@ -94,5 +94,27 @@ pipeline {
             }
         }
 
+        stage('Prod E2E') {
+            agent {
+                docker {
+                    image 'mcr.microsoft.com/playwright:v1.59.1-noble'
+                    reuseNode true
+                }
+            }
+            environment {
+                CI_ENVIRONMENT_URL = 'https://beamish-smakager-1a9efa.netlify.app'
+            }
+            steps {
+                echo 'Running E2E tests...'
+                sh'''
+                    npx playwright test --reporter=html 
+                '''
+            }
+            post{
+            always {
+                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright HTML Report', reportTitles: '', useWrapperFileDirectly: true])
+            }
+            }
+        }
     }
 }
