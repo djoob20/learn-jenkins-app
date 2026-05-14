@@ -114,13 +114,14 @@ pipeline {
                     echo "Deploying to staging. Site ID: $NETLIFY_SITE_ID"
                     node_modules/.bin/netlify status
                     node_modules/.bin/netlify deploy --site $NETLIFY_SITE_ID --dir=build --json > deploy-output.json
-                    node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json
+                    CI_ENVIRONMENT_URL=$(node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json)
+                    sleep 10
                     npx playwright test --reporter=html 
                 '''
-                script {
+                /* script {
                     def deployUrl = sh(script: "node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json", returnStdout: true).trim()
                     env.STAGING_URL = deployUrl
-                }
+                } */
             }
             post{
                 always {
@@ -173,6 +174,7 @@ pipeline {
                     echo "Deploying to production. Site ID: $NETLIFY_SITE_ID"
                     node_modules/.bin/netlify status
                     node_modules/.bin/netlify deploy --site $NETLIFY_SITE_ID --prod --dir=build
+                    sleep 10
                     npx playwright test --reporter=html 
                 '''
             }
