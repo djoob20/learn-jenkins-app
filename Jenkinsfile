@@ -106,6 +106,10 @@ pipeline {
                     reuseNode true
                 }
             }
+
+             environment {
+                CI_ENVIRONMENT_URL = 'STAGING_ENV_TO_BE_SET'
+            }
             
             steps {
                 sh '''
