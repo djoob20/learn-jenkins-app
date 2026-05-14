@@ -75,7 +75,7 @@ pipeline {
 
         }
 
-         stage('Deploy staging') {
+        /*  stage('Deploy staging') {
             agent{
                 docker {
                     image 'node:18-alpine'
@@ -97,23 +97,30 @@ pipeline {
                     env.STAGING_URL = deployUrl
                 }
             }
-        }
+        } */
 
-        stage('Staging E2E') {
+        stage('Deploy Staging') {
             agent {
                 docker {
                     image 'mcr.microsoft.com/playwright:v1.59.1-noble'
                     reuseNode true
                 }
             }
-            environment {
-                CI_ENVIRONMENT_URL = "${env.STAGING_URL}"
-            }
+            
             steps {
-                echo 'Running E2E tests...'
-                sh'''
+                sh '''
+                    npm install netlify-cli node-jq
+                    node_modules/.bin/netlify --version
+                    echo "Deploying to staging. Site ID: $NETLIFY_SITE_ID"
+                    node_modules/.bin/netlify status
+                    node_modules/.bin/netlify deploy --site $NETLIFY_SITE_ID --dir=build --json > deploy-output.json
+                    node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json
                     npx playwright test --reporter=html 
                 '''
+                script {
+                    def deployUrl = sh(script: "node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json", returnStdout: true).trim()
+                    env.STAGING_URL = deployUrl
+                }
             }
             post{
                 always {
@@ -128,8 +135,8 @@ pipeline {
                 }
             }
         }
-        
-         stage('Deploy prod') {
+
+       /*   stage('Deploy prod') {
             agent{
                 docker {
                     image 'node:18-alpine'
@@ -146,9 +153,9 @@ pipeline {
                 
                 '''
             }
-        }
+        } */
 
-        stage('Prod E2E') {
+        stage('Deploy E2E') {
             agent {
                 docker {
                     image 'mcr.microsoft.com/playwright:v1.59.1-noble'
@@ -160,7 +167,12 @@ pipeline {
             }
             steps {
                 echo 'Running E2E tests...'
-                sh'''
+                sh '''
+                    npm install netlify-cli
+                    node_modules/.bin/netlify --version
+                    echo "Deploying to production. Site ID: $NETLIFY_SITE_ID"
+                    node_modules/.bin/netlify status
+                    node_modules/.bin/netlify deploy --site $NETLIFY_SITE_ID --prod --dir=build
                     npx playwright test --reporter=html 
                 '''
             }
